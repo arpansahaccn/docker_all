@@ -1,0 +1,255 @@
+    -------------All about docker ---------
+
+1. What Is Docker ?
+
+ Docker is a computer Software which is explained through
+
+  Suppose in a devops operation the development team has developed a software using php which consists of os,php software suppose the software require a mysql host so,
+  the php software all in total includes os,php software, mysql host . When the entire software is given to the testing or operation team the same software may not run
+  this may happen due to the version and legacy issues . So to solve this the development team takes the software along with all the dependecies and instruction file 
+  to run it into a docker container which is a image and pass it to the test/ops team to run it in docker environment . This leads to the creation and use of docker.
+  
+ But the question is that we can also use vm instead of docker and wrap the software along with all the dependicies into a vm and pass the vm to be runed by testing/ops
+ team , but size of vm is about 1.5 to 2gb in case of ubuntu so docker is prefered.
+
+ Docker Structure: from low level to high level
+ 
+ Hardware --> Host operating system --> Container Engine  -->     App1     App2     App3
+                                                                  bin/lib  bin/lib  bin/lib 
+    Here , Container Environment is the docker container on top of it is ubuntu/other os container (which only contains necessary bin/libs file does'nt have the kernel
+   it depends on the underlying host operating system. App1 may run an ubuntu conainer , App2 centos etc.
+   That the size of docker is much less in comparison to vm's.
+
+
+ Vm Structure:
+
+   Hardware --> Host operating system --> Hypervisor -->     App1     App2     App3
+                                                             GuestOs  GuestOs  GuestOs
+  Here, Hypervisor that is used to virtuialize the hardware is used instead of container and incase of only the bins/libs of os container the entire guest os is used 
+  which increases the size of the vm.
+
+
+2.   Docker Container Lifecycle
+      Just like git and github , there is docker and dockerhub . Just like github dockerhub is a remote repository stored in the cloud/internet
+      anyone can create a docker image a push it in docker hub.
+
+      3 States of a are:
+
+      We can pull a image , run a image , stop an image or delete an image
+     so, running state , stop state and deleted state.
+
+
+3.  Docker installation and basic docker operations
+
+     For Windows:
+     DOWNLOAD IT FROM THE BELOW LINK, EVERYTHING IS INCORPORATED 
+
+     https://store.docker.com/editions/community/docker -ce desktop-windows
+   
+
+     For Linux: for ubuntu
+     BASIC DOCKER OPERATIONS:
+ 
+     sudo apt-get install docker.io
+     docker --version ( see the docker version )
+    
+     docker pull ubuntu(Here we are pulling the docker image of ubuntu os)
+     
+     docker image (to see what images is avail;able in docker)
+     
+     if there is any error regarding groups while executeing run command (this happens mainly in red hat enterprise linux)
+     type the following command
+     1.sudo grubby --update-kernel-ALL --args="systemd.unified.hierarchy=0"
+     2.sudo reboot
+     
+      Then after reboot execute the run command
+     
+     docker run --it -d ubuntu ( to run the docker image pulled )
+     here it means interactive and d means deamon i.e, running in the background
+    
+
+     docker ps ( to see list of containers)
+    
+     docker ps -a ( to see all the images pulled from docker hub in local docker container running or not)
+
+     docker stop <container-number> (to stop the running container)
+     
+     docker exec -it <container-number> bash (to enter into the container)
+     
+     Once you enter into the container , it will show root@<container-id> , this is where the the developer will execute and start working with his container
+     one can run commands such as sudo apt-get update or dnf update , remember since docker only contains bins/lib , it does'nt even contain sudo
+     
+     If the container is unresponsive  or is not stopping  , then kill it by using:
+     docker kill <container-id>
+     
+     
+     to permanently delete the container:
+     docker rm <container-id>
+     
+     to permanently delete the image:
+     docker rmi <image-id>
+
+
+
+4. Creating a docker hub account
+
+   go to https://hub.docker.com/
+   
+5. Saveing changes to a container 
+   
+    We will understand this with the help of a example:
+    
+    1.Run the docker image 
+      sudo docker run -it -d ubuntu
+      
+    2. Enter into the ubuntu container
+      sudo docker exec -it <container-id> bash
+      
+    3. After entering into the container 
+       create a new directory app by using mkdir app
+       
+    4.then exit from the container
+      come into image and run sudo docker ps , you will still see that the ubuntu container is running 
+      
+    5.Delete the container  by using sudo docker rm -f <container-id> 
+    
+    6.Run the container again
+     sudo docker run -it -d ubuntu
+     
+   7.Enter into the ubuntu container
+      sudo docker exec -it <container-id> bash
+      
+   8. while using ls app folder created inside the container is not there since we have create the image app locally (changes made) is not incorporated into the image
+      pulled from docker hub.
+      
+   How to solve this issue using commit 
+   
+   1. sudo docker run -it -d ubuntu
+   2. sudo docker exec -it <container-id> bash
+   3. exit 
+   4. sudo docker ps( you will see that the container is running)
+   5. now commit it so that it is incorporated into the image
+      sudo docker commit <container-id> <image-name-as-your-wish>
+   6. sudo docker images ( now see the image is created ) if you also go inside the container and check the directory it is present since commited.
+      Here we have created a directory and save the changes inside the container , we can also use software . We will see this with an example of apache.
+      
+      
+  6. Installing and running apache srver on ubuntu container and then saveing the container image into docker hub
+  
+   1.delete all the containers present all at once by
+     sudo docker rm -f $(sudo docker ps -a -q)
+     
+   2. run ubuntu container
+     sudo docker run -it -d ubuntu
+     
+   3. enter into the container 
+      sudo docker exec -it <container-id> bash
+      
+   4. update apt-get and install apache2 by running sudo apt-get install apache2
+   
+   5. check apche 2 is running or not 
+      service apache2 status
+      
+      run it by using service apache2 start
+      
+   6. finally comit it in your docker hub repository
+     
+      sudo docker commit <container-id> arpansaha/apache
+       
+      type sudo docker image see the apche image there
+      
+   7. map the port of host os to the port of container(apache default port is 80)
+      sudo docker run -it -p 82:80 -d ubuntu arpansaha/apache
+      
+   8. Enter into the container 
+      sudo docker exec -it <container-id> bash
+      
+   9. service apache2 start ( it will give a url copy the url and paste it in your browser apache opens )
+      Thus , we are not running apache seperately we are running it inside our container.
+      
+      
+      
+  7. Pushing it to docker hub
+  
+     sudo docker login
+     enter username and password 
+     then push the docker image to docker hub by
+     sudo docker push arpansaha/apache
+     go to url docker hub in the web and see your image being uploaded
+     
+     
+     Last Is Dockerfile 
+       Now, a docker file is an automated script that contains all the commands that we have done so far in one place 
+       
+       custom images using docker file
+       
+       suppose we have created a website and the directory structure of the website is index.php , 1.html , base.html , utils and
+       then ran the website in our system by 1. running apache + other dependencies , 2. edit the configure.ini file and 3. start the server
+       
+       Now if someone else wants to run our website  on their system , then will follow the following steps 1. running apache + other dependencies , 2. then edit the            configure.ini file 3. git pull website and 3. start the server 
+       after performing all the steps the website may not run in  his or her's system as their machine may be running diffrent os , commands are diffrent , versions
+       are different etc . So We incorporate the website + all the dependencies into a docker file .
+       
+       
+       We know that we can pull docker image from docker hub , then start working with the container install uther software work with it and finally create our
+       image containing both the image pulled + other softwares we were working on it ( into a image )
+       
+       So , here basically the docker file consits of  all the steps as said earlier it is an automated script it contains starting from the os say ubuntu
+       to all the files of a website , the dependencies included into a file known as docker file.
+       
+       So Docker file can be defined as it contains all the info for running your software in a base container.
+       
+       from dockerfile to image structure:
+       docker file ---> docker client/your system --->  docker server/ docker environment
+       
+       
+       How to create a docker file 
+       
+       vim Dockerfile 
+       
+       write the following :
+       
+       # This is a Sample Image 
+       FROM ubuntu
+      MAINTAINER arpan.sahaccn@protonmail.com
+
+      RUN apt-get update
+      RUN apt-get install -y nginx
+      CMD ["echo" , "Image created"]
+
+
+     Then type sudo docker build . (. at end means prsent in local directory )
+     to build your docker image
+     
+     and last step :
+     this command allows all the users to build there own docker image
+     
+     sudo docker build -t ImageName:TagName dir
+         here -t flag is used for tag name and you can give the image any name and tag name as your wiish
+         example : sudo docker build -t myimage:0.1. {Since Dockerfile is presnt in the current directory so we put.)
+         
+         and as output if you type sudo docker images we weill see our image name with id and size.
+         
+         ---------------------Thank You -------------------
+       
+       
+       
+
+  
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+
